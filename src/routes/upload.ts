@@ -74,4 +74,42 @@ router.post("/profile-picture", (req, res, next) => {
   });
 }));
 
+// New: upload a regular photo (not a profile picture)
+router.post("/photo", (req, res, next) => {
+  upload.single("image")(req, res, (err: any) => {
+    if (err) {
+      console.warn(`[upload] multer error:`, err?.message || err);
+      return res.status(400).json({ message: err?.message || "Upload error" });
+    }
+    next();
+  });
+}, authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No image uploaded" });
+  }
+
+  const inputPath = req.file.path;
+  const filename = req.file.filename;
+  const outputPath = path.join(process.cwd(), "downloads", filename);
+
+  const ok = await processImage(inputPath, outputPath);
+  if (!ok) return res.status(500).json({ message: "Image processing failed" });
+
+  const imageUrl = getImageUrl(filename);
+
+  const photoData: any = {
+    uri: imageUrl,
+    latitude: req.body?.latitude ? parseFloat(req.body.latitude) : 0,
+    longitude: req.body?.longitude ? parseFloat(req.body.longitude) : 0,
+    capturedAt: req.body?.capturedAt ? new Date(req.body.capturedAt) : new Date(),
+    address: req.body?.address || "",
+    notes: req.body?.notes || "",
+    isProfilePicture: false,
+    userId: req.user?.id
+  };
+
+  const photo = await createPhoto(photoData);
+  res.json({ message: "Photo uploaded", photo, imageUrl });
+}));
+
 export default router;
