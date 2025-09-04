@@ -5,6 +5,7 @@ export interface IUser extends mongoose.Document {
   fullName: string;
   email: string;
   avatarUrl?: string;
+  description?: string;
   passwordHash: string;
   salt: string;
   setPassword(password: string): void;
@@ -15,6 +16,7 @@ const userSchema = new mongoose.Schema<IUser>({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true, index: true },
   avatarUrl: { type: String },
+  description: { type: String },
   passwordHash: { type: String, required: true },
   salt: { type: String, required: true },
 }, { timestamps: true });

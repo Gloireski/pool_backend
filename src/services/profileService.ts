@@ -15,3 +15,10 @@ export async function updateProfileByUserId(userId: string, data: { fullName?: s
   return user;
 }
 
+export async function addDescriptionByUserId(userId: string, data: { description?: string }) {
+  const user = await User.findById(new Types.ObjectId(userId));
+  if (!user) return null;
+  if (data.description !== undefined) (user as any).description = data.description;
+  await user.save();
+  return user;
+}
