@@ -1,0 +1,1 @@
+export { daysWithPhotos } from "./photoService";
